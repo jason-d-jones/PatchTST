@@ -1,0 +1,5 @@
+outs:
+- md5: 6bc8c8938aea92bbacfc06272f78b406
+  size: 7235425
+  isexec: true
+  path: weather.csv

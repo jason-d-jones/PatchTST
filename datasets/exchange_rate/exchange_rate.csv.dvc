@@ -1,0 +1,4 @@
+outs:
+- md5: 60553ab6c2bed1a235cbcf194ac04f57
+  size: 637800
+  path: exchange_rate.csv

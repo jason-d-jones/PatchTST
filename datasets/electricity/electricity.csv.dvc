@@ -1,0 +1,5 @@
+outs:
+- md5: 0543ffc4ee30588c35e393141fcbb21e
+  size: 95581762
+  isexec: true
+  path: electricity.csv

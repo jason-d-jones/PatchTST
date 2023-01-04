@@ -1,0 +1,5 @@
+outs:
+- md5: 652810719aa3cb6be48b277dd1b9da8a
+  size: 67620
+  isexec: true
+  path: national_illness.csv
