@@ -1,5 +1,3 @@
-
-
 import numpy as np
 import pandas as pd
 import os
@@ -63,6 +61,8 @@ if args.is_finetune: args.save_finetuned_model = args.dset_finetune+'_patchtst_f
 elif args.is_linear_probe: args.save_finetuned_model = args.dset_finetune+'_patchtst_linear-probe'+suffix_name
 else: args.save_finetuned_model = args.dset_finetune+'_patchtst_finetuned'+suffix_name
 
+args.pretrained_model_full_path = args.save_path + args.pretrained_model
+
 # get available GPU devide
 set_device()
 
@@ -102,11 +102,13 @@ def find_lr(head_type):
     # get dataloader
     dls = get_dls(args)    
     model = get_model(dls.vars, args, head_type)
+    
     # transfer weight
-    # weight_path = args.save_path + args.pretrained_model + '.pth'
-    model = transfer_weights(args.pretrained_model, model)
+    model = transfer_weights(args.pretrained_model_full_path, model)
+
     # get loss
     loss_func = torch.nn.MSELoss(reduction='mean')
+    
     # get callbacks
     cbs = [RevInCB(dls.vars)] if args.revin else []
     cbs += [PatchCB(patch_len=args.patch_len, stride=args.stride)]
@@ -116,7 +118,8 @@ def find_lr(head_type):
                         loss_func, 
                         lr=args.lr, 
                         cbs=cbs,
-                        )                        
+                        )
+
     # fit the data to the model
     suggested_lr = learn.lr_finder()
     print('suggested_lr', suggested_lr)
@@ -134,19 +137,23 @@ def finetune_func(lr=args.lr):
     print('end-to-end finetuning')
     # get dataloader
     dls = get_dls(args)
+    
     # get model 
     model = get_model(dls.vars, args, head_type='prediction')
+    
     # transfer weight
-    # weight_path = args.pretrained_model + '.pth'
-    model = transfer_weights(args.pretrained_model, model)
+    model = transfer_weights(args.pretrained_model_full_path, model)
+    
     # get loss
     loss_func = torch.nn.MSELoss(reduction='mean')   
+    
     # get callbacks
     cbs = [RevInCB(dls.vars, denorm=True)] if args.revin else []
     cbs += [
          PatchCB(patch_len=args.patch_len, stride=args.stride),
          SaveModelCB(monitor='valid_loss', fname=args.save_finetuned_model, path=args.save_path)
         ]
+    
     # define learner
     learn = Learner(dls, model, 
                         loss_func, 
@@ -154,8 +161,8 @@ def finetune_func(lr=args.lr):
                         cbs=cbs,
                         metrics=[mse]
                         )                            
+    
     # fit the data to the model
-    #learn.fit_one_cycle(n_epochs=args.n_epochs_finetune, lr_max=lr)
     learn.fine_tune(n_epochs=args.n_epochs_finetune, base_lr=lr, freeze_epochs=10)
     save_recorders(learn)
 
@@ -164,19 +171,23 @@ def linear_probe_func(lr=args.lr):
     print('linear probing')
     # get dataloader
     dls = get_dls(args)
+    
     # get model 
     model = get_model(dls.vars, args, head_type='prediction')
+    
     # transfer weight
-    # weight_path = args.save_path + args.pretrained_model + '.pth'
-    model = transfer_weights(args.pretrained_model, model)
+    model = transfer_weights(args.pretrained_model_full_path, model)
+    
     # get loss
     loss_func = torch.nn.MSELoss(reduction='mean')    
+    
     # get callbacks
     cbs = [RevInCB(dls.vars, denorm=True)] if args.revin else []
     cbs += [
          PatchCB(patch_len=args.patch_len, stride=args.stride),
          SaveModelCB(monitor='valid_loss', fname=args.save_finetuned_model, path=args.save_path)
         ]
+    
     # define learner
     learn = Learner(dls, model, 
                         loss_func, 
@@ -184,6 +195,7 @@ def linear_probe_func(lr=args.lr):
                         cbs=cbs,
                         metrics=[mse]
                         )                            
+    
     # fit the data to the model
     learn.linear_probe(n_epochs=args.n_epochs_finetune, base_lr=lr)
     save_recorders(learn)
@@ -193,12 +205,14 @@ def test_func(weight_path):
     # get dataloader
     dls = get_dls(args)
     model = get_model(dls.vars, args, head_type='prediction').to('cuda')
+    
     # get callbacks
     cbs = [RevInCB(dls.vars, denorm=True)] if args.revin else []
     cbs += [PatchCB(patch_len=args.patch_len, stride=args.stride)]
     learn = Learner(dls, model,cbs=cbs)
     out  = learn.test(dls.test, weight_path=weight_path+'.pth', scores=[mse,mae])         # out: a list of [pred, targ, score]
     print('score:', out[2])
+    
     # save results
     pd.DataFrame(np.array(out[2]).reshape(1,-1), columns=['mse','mae']).to_csv(args.save_path + args.save_finetuned_model + '_acc.csv', float_format='%.6f', index=False)
     return out
@@ -207,31 +221,34 @@ def test_func(weight_path):
 
 if __name__ == '__main__':
         
+    args.dset = args.dset_finetune
+
     if args.is_finetune:
-        args.dset = args.dset_finetune
+        
         # Finetune
         suggested_lr = find_lr(head_type='prediction')        
         finetune_func(suggested_lr)        
         print('finetune completed')
+        
         # Test
-        out = test_func(args.save_path+args.save_finetuned_model)         
-        print('----------- Complete! -----------')
+        test_weight_path = args.save_path + args.save_finetuned_model
 
     elif args.is_linear_probe:
-        args.dset = args.dset_finetune
+        
         # Finetune
         suggested_lr = find_lr(head_type='prediction')        
         linear_probe_func(suggested_lr)        
         print('finetune completed')
-        # Test
-        out = test_func(args.save_path+args.save_finetuned_model)        
-        print('----------- Complete! -----------')
+        
+        test_weight_path = args.save_path + args.save_finetuned_model
 
     else:
-        args.dset = args.dset_finetune
-        weight_path = args.save_path+args.dset_finetune+'_patchtst_finetuned'+suffix_name
-        # Test
-        out = test_func(weight_path)        
-        print('----------- Complete! -----------')
+        # unused so far and may need to be modified JJ jan-2022
+        test_weight_path = args.save_path + args.dset_finetune + '_patchtst_finetuned' + suffix_name
+
+    
+    # Test
+    out = test_func(test_weight_path)        
+    print('----------- Complete! -----------')
 
 
