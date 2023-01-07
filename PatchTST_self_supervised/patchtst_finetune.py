@@ -133,42 +133,8 @@ def save_recorders(learn):
     df.to_csv(args.save_path + args.save_finetuned_model + '_losses.csv', float_format='%.6f', index=False)
 
 
-def finetune_func(lr=args.lr):
-    print('end-to-end finetuning')
-    # get dataloader
-    dls = get_dls(args)
+def transfer_learn_func(lr=args.lr):
     
-    # get model 
-    model = get_model(dls.vars, args, head_type='prediction')
-    
-    # transfer weight
-    model = transfer_weights(args.pretrained_model_full_path, model)
-    
-    # get loss
-    loss_func = torch.nn.MSELoss(reduction='mean')   
-    
-    # get callbacks
-    cbs = [RevInCB(dls.vars, denorm=True)] if args.revin else []
-    cbs += [
-         PatchCB(patch_len=args.patch_len, stride=args.stride),
-         SaveModelCB(monitor='valid_loss', fname=args.save_finetuned_model, path=args.save_path)
-        ]
-    
-    # define learner
-    learn = Learner(dls, model, 
-                        loss_func, 
-                        lr=lr, 
-                        cbs=cbs,
-                        metrics=[mse]
-                        )                            
-    
-    # fit the data to the model
-    learn.fine_tune(n_epochs=args.n_epochs_finetune, base_lr=lr, freeze_epochs=10)
-    save_recorders(learn)
-
-
-def linear_probe_func(lr=args.lr):
-    print('linear probing')
     # get dataloader
     dls = get_dls(args)
     
@@ -197,8 +163,15 @@ def linear_probe_func(lr=args.lr):
                         )                            
     
     # fit the data to the model
-    learn.linear_probe(n_epochs=args.n_epochs_finetune, base_lr=lr)
+    if args.is_linear_probe:
+        print('linear probing')
+        learn.linear_probe(n_epochs=args.n_epochs_finetune, base_lr=lr)
+    elif args.is_finetune:
+        print('end-to-end finetuning')
+        learn.fine_tune(n_epochs=args.n_epochs_finetune, base_lr=lr, freeze_epochs=10)
+        
     save_recorders(learn)
+
 
 
 def test_func(weight_path):
@@ -223,23 +196,14 @@ if __name__ == '__main__':
         
     args.dset = args.dset_finetune
 
-    if args.is_finetune:
+    if args.is_finetune or args.is_linear_probe:
         
         # Finetune
         suggested_lr = find_lr(head_type='prediction')        
-        finetune_func(suggested_lr)        
+        transfer_learn_func(suggested_lr)        
         print('finetune completed')
         
         # Test
-        test_weight_path = args.save_path + args.save_finetuned_model
-
-    elif args.is_linear_probe:
-        
-        # Finetune
-        suggested_lr = find_lr(head_type='prediction')        
-        linear_probe_func(suggested_lr)        
-        print('finetune completed')
-        
         test_weight_path = args.save_path + args.save_finetuned_model
 
     else:
