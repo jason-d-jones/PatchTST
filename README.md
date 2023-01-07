@@ -1,6 +1,6 @@
 # PatchTST
 
-This is an offical implementation of PatchTST: "A Time Series is Worth 64 Words: Long-term Forecasting with Transformers." https://arxiv.org/abs/2211.14730.
+This is a fork of the offical implementation of PatchTST: "A Time Series is Worth 64 Words: Long-term Forecasting with Transformers." https://arxiv.org/abs/2211.14730. It has modifications to allow it to run. This repository is not maintained by the original authors.
 
 ## Key Designs
 
@@ -60,7 +60,11 @@ The model will be saved to the saved_model folder for the downstream tasks. Ther
  
  3. Fine-tuning: The script patchtst_finetune.py is for fine-tuning step. Either linear_probing or fine-tune the entire network can be applied.
 ```
-python patchtst_finetune.py --dset ettm1 --pretrained_model <model_name>
+python patchtst_finetune.py --dset ettm1 --is_linear_probe 1 --pretrained_model <model_name>
+```
+or
+```
+python patchtst_finetune.py --dset ettm1 --is_finetune 1 --pretrained_model <model_name>
 ```
 
 ## Acknowledgement

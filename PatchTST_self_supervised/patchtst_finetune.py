@@ -208,7 +208,8 @@ if __name__ == '__main__':
 
     else:
         # unused so far and may need to be modified JJ jan-2022
-        test_weight_path = args.save_path + args.dset_finetune + '_patchtst_finetuned' + suffix_name
+        raise Exception('Invalid options: either \'is_linear_probe\' or \'is_finetune\' must be specified')
+        #test_weight_path = args.save_path + args.dset_finetune + '_patchtst_finetuned' + suffix_name
 
     
     # Test
