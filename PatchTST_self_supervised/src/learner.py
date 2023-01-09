@@ -41,7 +41,7 @@ class Learner(GetAttr):
         # Initialize callbacks                 
         if cbs and not isinstance(cbs, List): cbs = [cbs]    
         self.initialize_callbacks(cbs)        
-        # Indicator of running lr_finder
+        # Indicates that lr_finder has not yet been run
         self.run_finder = False
 
     def set_opt(self):

@@ -99,11 +99,11 @@ def get_model(c_in, args, head_type, weight_path=None):
 
 
 def find_lr(head_type):
-    # get dataloader
+    # get DataLoaders object
     dls = get_dls(args)    
     model = get_model(dls.vars, args, head_type)
     
-    # transfer weight
+    # copy weights from saved file to model object
     model = transfer_weights(args.pretrained_model_full_path, model)
 
     # get loss
@@ -135,7 +135,7 @@ def save_recorders(learn):
 
 def transfer_learn_func(lr=args.lr):
     
-    # get dataloader
+    # get DataLoaders object
     dls = get_dls(args)
     
     # get model 

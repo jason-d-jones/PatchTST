@@ -23,6 +23,16 @@ class PatchTST(nn.Module):
          [bs x target_dim] for regression
          [bs x target_dim] for classification
          [bs x num_patch x n_vars x patch_len] for pretrain
+
+    Inputs:
+        c_in (int)          number of variables.
+        target_dim (int)
+        patch_len (int)     number of observations in each patch.
+        stride (int)        number of elements between the start of each patch.
+        num_patch (int)     the number of patches.
+        n_layers (int)
+        d_model (int)
+        n_heads (int)
     """
     def __init__(self, c_in:int, target_dim:int, patch_len:int, stride:int, num_patch:int, 
                  n_layers:int=3, d_model=128, n_heads=16, shared_embedding=True, d_ff:int=256, 
