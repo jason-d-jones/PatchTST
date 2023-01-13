@@ -1,2 +1,6 @@
 [core]
     autostage = true
+    remote = aws-storage
+['remote "aws-storage"']
+    url = s3://aptech-ml-research/forecasting/patchtst
+    region = us-west-2
