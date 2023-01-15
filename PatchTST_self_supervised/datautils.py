@@ -21,153 +21,57 @@ def get_dls(params):
     assert params.dset in DSETS, f"Unrecognized dset (`{params.dset}`). Options include: {DSETS}"
     if not hasattr(params,'use_time_features'): params.use_time_features = False
 
-    if params.dset == 'ettm1':
-        root_path = DATA_PATH + 'ETT-small/'
-        size = [params.context_points, 0, params.target_points]
-        dls = DataLoaders(
-                datasetCls=Dataset_ETT_minute,
-                dataset_kwargs={
-                'root_path': root_path,
-                'data_path': 'ETTm1.csv',
-                'features': params.features,
-                'scale': True,
-                'size': size,
-                'use_time_features': params.use_time_features
-                },
-                batch_size=params.batch_size,
-                workers=params.num_workers,
-                )
+    datasetCls = Dataset_Custom
+    size = [params.context_points, 0, params.target_points]
 
+    if params.dset == 'ettm1':
+        folder_name = 'ETT-small/'
+        data_file_name = 'ETTm1.csv'
+        datasetCls = Dataset_ETT_minute
 
     elif params.dset == 'ettm2':
-        root_path = DATA_PATH + 'ETT-small/'
-        size = [params.context_points, 0, params.target_points]
-        dls = DataLoaders(
-                datasetCls=Dataset_ETT_minute,
-                dataset_kwargs={
-                'root_path': root_path,
-                'data_path': 'ETTm2.csv',
-                'features': params.features,
-                'scale': True,
-                'size': size,
-                'use_time_features': params.use_time_features
-                },
-                batch_size=params.batch_size,
-                workers=params.num_workers,
-                )
+        folder_name = 'ETT-small/'
+        data_file_name = 'ETTm2.csv'
+        datasetCls = Dataset_ETT_minute
 
     elif params.dset == 'etth1':
-        root_path = DATA_PATH + 'ETT-small/'
-        size = [params.context_points, 0, params.target_points]
-        dls = DataLoaders(
-                datasetCls=Dataset_ETT_hour,
-                dataset_kwargs={
-                'root_path': root_path,
-                'data_path': 'ETTh1.csv',
-                'features': params.features,
-                'scale': True,
-                'size': size,
-                'use_time_features': params.use_time_features
-                },
-                batch_size=params.batch_size,
-                workers=params.num_workers,
-                )
-
+        folder_name = 'ETT-small/'
+        data_file_name = 'ETTh1.csv'
+        datasetCls = Dataset_ETT_hour,
 
     elif params.dset == 'etth2':
-        root_path = DATA_PATH + 'ETT-small/'
-        size = [params.context_points, 0, params.target_points]
-        dls = DataLoaders(
-                datasetCls=Dataset_ETT_hour,
-                dataset_kwargs={
-                'root_path': root_path,
-                'data_path': 'ETTh2.csv',
-                'features': params.features,
-                'scale': True,
-                'size': size,
-                'use_time_features': params.use_time_features
-                },
-                batch_size=params.batch_size,
-                workers=params.num_workers,
-                )
-    
+        folder_name = 'ETT-small/'
+        data_file_name = 'ETTh2.csv'
+        datasetCls = Dataset_ETT_hour,
 
     elif params.dset == 'electricity':
-        root_path = DATA_PATH + 'electricity/'
-        size = [params.context_points, 0, params.target_points]
-        dls = DataLoaders(
-                datasetCls=Dataset_Custom,
-                dataset_kwargs={
-                'root_path': root_path,
-                'data_path': 'electricity.csv',
-                'features': params.features,
-                'scale': True,
-                'size': size,
-                'use_time_features': params.use_time_features
-                },
-                batch_size=params.batch_size,
-                workers=params.num_workers,
-                )
+        folder_name = 'electricity/'
+        data_file_name = 'electricity.csv'
 
     elif params.dset == 'traffic':
-        root_path = DATA_PATH + 'traffic/'
-        size = [params.context_points, 0, params.target_points]
-        dls = DataLoaders(
-                datasetCls=Dataset_Custom,
-                dataset_kwargs={
-                'root_path': root_path,
-                'data_path': 'traffic.csv',
-                'features': params.features,
-                'scale': True,
-                'size': size,
-                'use_time_features': params.use_time_features
-                },
-                batch_size=params.batch_size,
-                workers=params.num_workers,
-                )
+        folder_name = 'traffic/'
+        data_file_name = 'traffic.csv'
     
     elif params.dset == 'weather':
-        root_path = DATA_PATH + 'weather/'
-        size = [params.context_points, 0, params.target_points]
-        dls = DataLoaders(
-                datasetCls=Dataset_Custom,
-                dataset_kwargs={
-                'root_path': root_path,
-                'data_path': 'weather.csv',
-                'features': params.features,
-                'scale': True,
-                'size': size,
-                'use_time_features': params.use_time_features
-                },
-                batch_size=params.batch_size,
-                workers=params.num_workers,
-                )
+        folder_name = 'weather/'
+        data_file_name = 'weather.csv'
 
     elif params.dset == 'illness':
-        root_path = DATA_PATH + 'illness/'
-        size = [params.context_points, 0, params.target_points]
-        dls = DataLoaders(
-                datasetCls=Dataset_Custom,
-                dataset_kwargs={
-                'root_path': root_path,
-                'data_path': 'national_illness.csv',
-                'features': params.features,
-                'scale': True,
-                'size': size,
-                'use_time_features': params.use_time_features
-                },
-                batch_size=params.batch_size,
-                workers=params.num_workers,
-                )
+        folder_name = 'illness/'
+        data_file_name = 'national_illness.csv'
 
     elif params.dset == 'exchange':
-        root_path = DATA_PATH + 'exchange_rate/'
-        size = [params.context_points, 0, params.target_points]
-        dls = DataLoaders(
-                datasetCls=Dataset_Custom,
+        folder_name = 'exchange_rate/'
+        data_file_name = 'exchange_rate.csv'
+
+
+    root_path = DATA_PATH + folder_name
+    
+    dls = DataLoaders(
+                datasetCls=datasetCls,
                 dataset_kwargs={
                 'root_path': root_path,
-                'data_path': 'exchange_rate.csv',
+                'data_path': data_file_name,
                 'features': params.features,
                 'scale': True,
                 'size': size,
