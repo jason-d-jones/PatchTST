@@ -55,7 +55,7 @@ if not os.path.exists(args.save_path): os.makedirs(args.save_path)
 
 
 # get available GPU devide
-set_device()
+# set_device()
 
 
 def get_model(c_in, args):
